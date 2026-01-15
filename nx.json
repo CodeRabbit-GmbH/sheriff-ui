@@ -9,6 +9,11 @@
     "@nx/eslint:lint": {
       "inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
       "cache": true
+    },
+    "@angular/build:application": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "namedInputs": {
@@ -33,5 +38,7 @@
       "conventionalCommits": true
     }
   },
-  "useLegacyCache": true
+  "tui": {
+    "enabled": false
+  }
 }

@@ -1,0 +1,63 @@
+@if (showToolbar()) {
+  <div class="mb-2 flex gap-2 items-center">
+    <button class="btn" (click)="fit()">Fit</button>
+    <button class="btn" (click)="zoom(1.1)">+</button>
+    <button class="btn" (click)="zoom(1 / 1.1)">-</button>
+    <span class="ml-2 text-slate-500 text-sm">(Ctrl/Meta + wheel to zoom)</span>
+  </div>
+}
+<ko-stage [config]="stage" appCanvasWheelZoom (click)="onBackgroundClick($event)">
+  <ko-layer>
+    @for (l of render.links(); track $index) {
+      <ko-line [config]="l"></ko-line>
+    }
+  </ko-layer>
+  <ko-layer>
+    @for (n of render.drawNodes(); track n.id) {
+      <ko-rect
+        [config]="n.rect"
+        (click)="onSelectNode($event, n.id)"
+        (mouseover)="onNodeMouseEnter($event, n.id)"
+        (mouseout)="onNodeMouseLeave($event, n.id)"
+      ></ko-rect>
+      @if (n.borderTop) { <ko-line [config]="n.borderTop"></ko-line> }
+      <ko-text
+        [config]="n.title"
+        (click)="onSelectNode($event, n.id)"
+        (mouseover)="onNodeMouseEnter($event, n.id)"
+        (mouseout)="onNodeMouseLeave($event, n.id)"
+      ></ko-text>
+      @if (n.titleSeparator) { <ko-line [config]="n.titleSeparator"></ko-line> }
+      @for (t of n.tags; track $index) {
+        <ko-rect
+          [config]="t.bg"
+          (click)="onSelectNode($event, n.id)"
+          (mouseover)="onNodeMouseEnter($event, n.id)"
+          (mouseout)="onNodeMouseLeave($event, n.id)"
+        ></ko-rect>
+        <ko-text
+          [config]="t.label"
+          (click)="onSelectNode($event, n.id)"
+          (mouseover)="onNodeMouseEnter($event, n.id)"
+          (mouseout)="onNodeMouseLeave($event, n.id)"
+        ></ko-text>
+        @if (t.removeBtn) {
+          <ko-text
+            [config]="t.removeBtn"
+            (click)="onRemoveTag($event, n.id, t.tagName)"
+            (mouseover)="onNodeMouseEnter($event, n.id)"
+            (mouseout)="onNodeMouseLeave($event, n.id)"
+          ></ko-text>
+        }
+      }
+      @if (n.toggle) {
+        <ko-circle [config]="n.toggle.circle" (click)="onToggle($event, n.id)"></ko-circle>
+        <ko-line [config]="n.toggle.horiz" (click)="onToggle($event, n.id)"></ko-line>
+        @if (n.toggle.vert) { <ko-line [config]="n.toggle.vert" (click)="onToggle($event, n.id)"></ko-line> }
+      }
+    }
+  </ko-layer>
+</ko-stage>
+
+
+

@@ -1,0 +1,61 @@
+{
+  "name": "sheriff-vscode",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/sheriff-vscode/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "main": "packages/sheriff-vscode/src/extension.ts",
+        "tsConfig": "packages/sheriff-vscode/tsconfig.lib.json",
+        "outputPath": "dist/packages/sheriff-vscode",
+        "outputFileName": "extension.js",
+        "format": ["cjs"],
+        "platform": "node",
+        "bundle": true,
+        "thirdParty": true,
+        "external": ["vscode"],
+        "skipTypeCheck": true,
+        "esbuildOptions": {
+          "outExtension": { ".js": ".js" }
+        },
+        "assets": [
+          { "input": "packages/sheriff-vscode", "glob": "package.json", "output": "." },
+          { "input": "packages/sheriff-vscode", "glob": "LICENSE", "output": "." },
+          { "input": ".", "glob": "logo.png", "output": "media/ui" }
+        ]
+      }
+    },
+    "bundle": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "sheriff-ui:build", "sheriff-api:build", "core:build"],
+      "outputs": [
+        "{workspaceRoot}/dist/packages/sheriff-vscode/media/ui/index.html",
+        "{workspaceRoot}/dist/packages/sheriff-vscode/server/main-minimal.cjs"
+      ],
+      "options": {
+        "parallel": false,
+        "commands": [
+          "cp -R dist/packages/sheriff-ui/browser/* dist/packages/sheriff-vscode/media/ui/",
+          "mkdir -p dist/packages/sheriff-vscode/server && cp dist/packages/sheriff-api/main-minimal.cjs dist/packages/sheriff-vscode/server/",
+          "mkdir -p dist/packages/sheriff-vscode/server/node_modules/@softarc/sheriff-core && cp -R dist/packages/core/* dist/packages/sheriff-vscode/server/node_modules/@softarc/sheriff-core/"
+        ]
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["bundle"],
+      "outputs": ["{workspaceRoot}/dist/packages/sheriff-vscode/*.vsix"],
+      "options": {
+        "cwd": "dist/packages/sheriff-vscode",
+        "command": "npx @vscode/vsce package --no-dependencies -o sheriff-vscode.vsix"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

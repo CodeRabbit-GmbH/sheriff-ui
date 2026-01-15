@@ -42,3 +42,8 @@ Thumbs.db
 .yalc
 yalc.lock
 .test-projects
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+packages/sheriff-ui/src/styles.generated.css
+.angular
+.playwright-mcp

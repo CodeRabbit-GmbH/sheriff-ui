@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc/packages/sheriff-ui",
+    "types": [],
+    "target": "ES2022",
+    "module": "ES2022"
+  },
+  "files": [],
+  "include": ["src/**/*.ts"]
+}
+

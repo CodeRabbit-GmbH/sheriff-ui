@@ -1,0 +1,67 @@
+@if (!collapsed()) {
+  <div
+    class="shrink-0 min-h-0 flex flex-col overflow-hidden"
+    appPanelResize
+    [options]="{
+      defaultWidth: 768,
+      minWidth: 400,
+      maxWidth: 1200,
+      storageKey: 'sheriff-ui-code-preview-panel-width',
+      handleEdge: 'left'
+    }"
+  >
+    <div class="card bg-base-100 border border-base-300 flex-1 min-h-0 flex flex-col overflow-hidden w-full">
+      <div class="card-body p-3 gap-2 flex flex-col min-h-0 h-full overflow-hidden">
+        <div class="flex items-center justify-between shrink-0 pb-2 border-b border-base-300">
+          <h2 class="card-title text-sm">Code Preview</h2>
+          <div class="flex items-center gap-1">
+            @if (validating()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else if (!previewValid() && previewErrors().length > 0) {
+              <span class="badge badge-error badge-xs">Invalid</span>
+            } @else if (previewValid()) {
+              <span class="badge badge-success badge-xs">OK</span>
+            }
+            @if (draftDirty()) {
+              <span class="badge badge-warning badge-xs">Unsaved</span>
+            }
+            <button class="btn btn-xs btn-ghost btn-square" (click)="toggleCollapsed.emit()" title="Collapse code preview">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0 relative">
+          <app-code-editor
+            data-testid="manual-code-editor"
+            class="h-full w-full block absolute inset-0"
+            [language]="'typescript'"
+            [value]="draft()"
+            (valueChange)="draftChange.emit($event)"
+          ></app-code-editor>
+        </div>
+
+        @if (previewErrors().length > 0) {
+          <div class="alert alert-error alert-soft text-xs max-h-24 overflow-auto shrink-0 py-2">
+            <ul class="list-disc list-inside">
+              @for (e of previewErrors(); track $index) {
+                <li>{{ e }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <!-- Collapsed Code Preview Panel -->
+  <div
+    class="w-8 shrink-0 bg-base-100 border border-base-300 rounded-lg cursor-pointer hover:bg-base-200 transition-colors flex items-center justify-center"
+    (click)="toggleCollapsed.emit()"
+    title="Expand code preview"
+  >
+    <span class="writing-mode-vertical-flip text-sm font-medium text-base-content/70">Code Preview</span>
+  </div>
+}

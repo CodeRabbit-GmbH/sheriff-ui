@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cyclosproject/ng-openapi-gen/master/ng-openapi-gen-schema.json",
+  "input": "packages/sheriff-api/openapi/openapi.yaml",
+  "output": "packages/sheriff-ui/src/app/api",
+  "services": false
+}
+

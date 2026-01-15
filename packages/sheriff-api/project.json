@@ -1,0 +1,44 @@
+{
+  "name": "sheriff-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/sheriff-api/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["core:build"],
+      "options": {
+        "main": "packages/sheriff-api/src/main-minimal.ts",
+        "tsConfig": "packages/sheriff-api/tsconfig.lib.json",
+        "outputPath": "dist/packages/sheriff-api",
+        "outputFileName": "main-minimal.cjs",
+        "format": ["cjs"],
+        "platform": "node",
+        "bundle": true,
+        "thirdParty": true,
+        "external": ["typescript", "@softarc/sheriff-core"],
+        "skipTypeCheck": true,
+        "assets": [
+          {
+            "input": "packages/sheriff-api/openapi",
+            "glob": "**/*",
+            "output": "openapi"
+          }
+        ]
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "sheriff-api:build",
+        "watch": true,
+        "runBuildTargetDependencies": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  },
+  "tags": []
+}

@@ -1,0 +1,157 @@
+<div class="w-full h-full px-4 py-4 flex flex-col gap-3 min-h-0 bg-base-200">
+  <div class="flex flex-wrap gap-3 items-center justify-between">
+    <div class="flex items-center gap-3 flex-wrap flex-1">
+      <div class="flex items-center gap-2">
+        <img [src]="logoUrl" alt="Sheriff Logo" class="w-8 h-8" />
+        <span class="font-bold text-base-content hidden sm:inline">Sheriff</span>
+      </div>
+
+      <label class="input input-bordered input-sm flex items-center gap-2 min-w-[200px] max-w-[320px]">
+        <span class="text-xs text-base-content/60 whitespace-nowrap">Root</span>
+        <input
+          data-testid="manual-root"
+          class="grow min-w-0"
+          placeholder="/path/to/project"
+          [value]="store.cwd()"
+          (input)="store.setCwd($any($event.target).value || '')"
+        />
+      </label>
+
+      @if (store.manualEntryOverride()) {
+        <label class="input input-bordered input-sm flex items-center gap-2 min-w-[180px] max-w-[280px]">
+          <span class="text-xs text-base-content/60 whitespace-nowrap">Entry</span>
+          <input
+            data-testid="manual-entry"
+            class="grow min-w-0"
+            placeholder="src/main.ts"
+            [value]="store.overriddenEntry() || store.entry()"
+            (input)="store.setOverriddenEntry($any($event.target).value || '')"
+          />
+        </label>
+      } @else if (store.availableEntries().length > 1) {
+        <select
+          class="select select-bordered select-sm min-w-[140px]"
+          [value]="store.entry()"
+          (change)="store.selectEntry($any($event.target).value)"
+          title="Select entry point"
+          aria-label="Select entry point"
+        >
+          @for (entryPath of store.availableEntries(); track entryPath) {
+            <option [value]="entryPath">{{ entryPath }}</option>
+          }
+        </select>
+      } @else {
+        <label class="input input-bordered input-sm flex items-center gap-2 min-w-[180px] max-w-[280px] opacity-60">
+          <span class="text-xs text-base-content/60 whitespace-nowrap">Entry</span>
+          <input
+            data-testid="manual-entry"
+            class="grow min-w-0"
+            placeholder="src/main.ts"
+            [value]="store.entry()"
+            disabled
+          />
+        </label>
+      }
+
+      <label class="flex items-center gap-1 cursor-pointer" title="Enable manual entry override">
+        <input
+          type="checkbox"
+          class="checkbox checkbox-xs"
+          [checked]="store.manualEntryOverride()"
+          (change)="store.setManualEntryOverride($any($event.target).checked)"
+        />
+        <span class="text-xs text-base-content/60">Override</span>
+      </label>
+
+      <button data-testid="manual-activate" class="btn btn-sm btn-primary" (click)="store.init()">Activate</button>
+
+      @if (store.missingConfig()) {
+        <span class="badge badge-error badge-sm">No sheriff.config.ts</span>
+      }
+      @if (!store.previewTree()) {
+        <span class="badge badge-warning badge-sm">Run "Infer from Code"</span>
+      }
+    </div>
+
+    <div class="flex flex-wrap gap-2 items-center">
+      <button data-testid="manual-infer" class="btn btn-sm" (click)="store.applyPreview()">Infer from Code</button>
+      <button data-testid="manual-save" class="btn btn-sm" [disabled]="!store.draft().trim()" (click)="store.saveDraftToDisk()">
+        Save
+      </button>
+      <button data-testid="manual-init-default" class="btn btn-sm" (click)="store.initDefault()">Init Default</button>
+      <button
+        type="button"
+        class="btn btn-sm btn-square btn-ghost"
+        (click)="themeService.toggle()"
+        [title]="themeService.theme() === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
+      >
+        @if (themeService.theme() === 'light') {
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        } @else {
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        }
+      </button>
+    </div>
+  </div>
+
+  <div class="flex gap-3 min-h-0 flex-1 overflow-hidden">
+    <app-tags-panel
+      [tags]="store.allTags()"
+      [tagUsageCounts]="store.tagUsageCount()"
+      [collapsed]="tagsCollapsed()"
+      [selectedNode]="store.selectedNode()"
+      (tagDragStart)="store.setDraggingTag($event.tag)"
+      (tagDragEnd)="store.setDraggingTag(null)"
+      (toggleCollapsed)="tagsCollapsed.set(!tagsCollapsed())"
+      (openNewTagModal)="onOpenNewTagModal()"
+    />
+
+    <div class="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
+      <app-selected-node-panel
+        [node]="store.selectedNode()"
+        [allTags]="store.allTags()"
+        [collapsed]="selectedCollapsed()"
+        (toggleCollapsed)="selectedCollapsed.set(!selectedCollapsed())"
+        (addTag)="store.modifyTag('selected', 'add', $event)"
+        (removeTag)="store.modifyTag('selected', 'remove', $event)"
+      />
+
+      <app-module-chart-panel
+        [tree]="store.graphTree()"
+        [targetModules]="store.targetModules()"
+        [draggingTag]="store.draggingTag()"
+        [collapsed]="chartCollapsed()"
+        [matrixCollapsed]="matrixCollapsed()"
+        (toggleCollapsed)="chartCollapsed.set(!chartCollapsed())"
+        (fit)="onFitChart()"
+        (refresh)="store.applyPreview()"
+        (selectionChange)="store.setSelectedId($event)"
+        (tagRemove)="store.modifyTag($event.nodeId, 'remove', $event.tag)"
+        (tagDropped)="onTagDropped($event)"
+      />
+
+      <app-dependency-matrix-panel
+        [tags]="store.allTags()"
+        [depRules]="store.depRules()"
+        [collapsed]="matrixCollapsed()"
+        (toggleCollapsed)="matrixCollapsed.set(!matrixCollapsed())"
+        (toggleDepRule)="store.toggleDepRuleAndRegenerate($event.from, $event.to)"
+      />
+    </div>
+
+    <app-code-preview-panel
+      [draft]="store.draft()"
+      [validating]="store.validating()"
+      [previewValid]="store.previewValid()"
+      [previewErrors]="store.previewErrors()"
+      [draftDirty]="store.draftDirty()"
+      [collapsed]="codePreviewCollapsed()"
+      (toggleCollapsed)="codePreviewCollapsed.set(!codePreviewCollapsed())"
+      (draftChange)="store.setDraft($event)"
+    />
+  </div>
+</div>

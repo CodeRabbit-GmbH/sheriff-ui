@@ -1,0 +1,50 @@
+{
+  "name": "sheriff-vscode",
+  "displayName": "Sheriff",
+  "description": "Visual UI for Sheriff - TypeScript module boundaries and dependency rules (manual mode)",
+  "version": "0.0.0",
+  "publisher": "softarc",
+  "license": "MIT",
+  "icon": "media/ui/logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/softarc-consulting/sheriff"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "sheriff.openUi", "title": "Sheriff: Open UI" },
+      { "command": "sheriff.openUiFromFolder", "title": "Open Sheriff from Here" }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "sheriff.openUiFromFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "navigation@10"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Sheriff",
+      "properties": {
+        "sheriff.defaultEntryFile": {
+          "type": "string",
+          "default": "src/main.ts",
+          "description": "Default entry file path (relative to root folder)"
+        },
+        "sheriff.rememberLastFolder": {
+          "type": "boolean",
+          "default": true,
+          "description": "Remember the last used root folder per workspace"
+        }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,505 @@
+openapi: 3.0.3
+info:
+  title: Sheriff API (manual mode)
+  version: 0.0.0
+servers:
+  - url: /
+tags:
+  - name: env
+    description: Server environment endpoints
+  - name: manual
+    description: Manual mode API endpoints
+paths:
+  /api/env:
+    get:
+      operationId: getEnv
+      tags: [env]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvResponse'
+
+  /api/manual/init:
+    post:
+      operationId: manualInit
+      tags: [manual]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/manual/init-default:
+    post:
+      operationId: manualInitDefault
+      tags: [manual]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/manual/preview:
+    post:
+      operationId: manualPreview
+      tags: [manual]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewContext'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/manual/save:
+    post:
+      operationId: manualSave
+      tags: [manual]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/manual/add-tag:
+    post:
+      operationId: manualAddTag
+      tags: [manual]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddTagRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/manual/remove-tag:
+    post:
+      operationId: manualRemoveTag
+      tags: [manual]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveTagRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/manual/delete-tag-everywhere:
+    post:
+      operationId: manualDeleteTagEverywhere
+      tags: [manual]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteTagRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/manual/toggle-dep-rule:
+    post:
+      operationId: manualToggleDepRule
+      tags: [manual]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToggleDepRuleRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    EnvResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required: [ok]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    FileNode:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        pathRel: { type: string }
+        pathAbs: { type: string }
+        type:
+          type: string
+          enum: ['file']
+      required: [id, name, pathRel, pathAbs, type]
+
+    DirNode:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        pathRel: { type: string }
+        pathAbs: { type: string }
+        type:
+          type: string
+          enum: ['dir']
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreeNode'
+        isSheriffModule:
+          type: boolean
+        tags:
+          type: array
+          items: { type: string }
+      required: [id, name, pathRel, pathAbs, type, children, isSheriffModule]
+
+    TreeNode:
+      oneOf:
+        - $ref: '#/components/schemas/DirNode'
+        - $ref: '#/components/schemas/FileNode'
+
+    RegExpLiteral:
+      type: object
+      description: AST node representing a RegExp literal
+      properties:
+        kind:
+          type: string
+          enum: ['regex']
+        pattern:
+          type: string
+        flags:
+          type: string
+      required: [kind, pattern, flags]
+
+    StaticDepRule:
+      type: object
+      description: Dependency rule with static tag list
+      properties:
+        kind:
+          type: string
+          enum: ['static']
+        tags:
+          type: array
+          items: { type: string }
+      required: [kind, tags]
+
+    FunctionDepRule:
+      type: object
+      description: Dependency rule using a function (e.g., sameTag, anyTag)
+      properties:
+        kind:
+          type: string
+          enum: ['function']
+        source:
+          type: string
+      required: [kind, source]
+
+    MixedDepRule:
+      type: object
+      description: Dependency rule with both static tags and functions
+      properties:
+        kind:
+          type: string
+          enum: ['mixed']
+        tags:
+          type: array
+          items: { type: string }
+        functions:
+          type: array
+          items: { type: string }
+      required: [kind, tags, functions]
+
+    UnknownDepRule:
+      type: object
+      description: Dependency rule that couldn't be parsed
+      properties:
+        kind:
+          type: string
+          enum: ['unknown']
+        type:
+          type: string
+      required: [kind, type]
+
+    DepRuleNode:
+      description: Union of all dependency rule node types
+      oneOf:
+        - $ref: '#/components/schemas/StaticDepRule'
+        - $ref: '#/components/schemas/FunctionDepRule'
+        - $ref: '#/components/schemas/MixedDepRule'
+        - $ref: '#/components/schemas/UnknownDepRule'
+
+    DepRulesByTag:
+      type: object
+      description: Map of dependency rules keyed by source tag
+      additionalProperties:
+        $ref: '#/components/schemas/DepRuleNode'
+
+    TagsByPathRel:
+      type: object
+      additionalProperties:
+        type: array
+        items: { type: string }
+
+    ManualConfigOptions:
+      type: object
+      properties:
+        version: { type: number }
+        log: { type: boolean }
+        autoTagging: { type: boolean }
+        enableBarrelLess: { type: boolean }
+        excludeRoot: { type: boolean }
+        barrelFileName: { type: string }
+        entryFile: { type: string }
+        encapsulationPattern:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/RegExpLiteral'
+        entryPoints:
+          type: object
+          additionalProperties: { type: string }
+        ignoreFileExtensions:
+          type: array
+          items: { type: string }
+
+    DepRulesForDisplay:
+      type: object
+      description: Simplified dep rules for frontend display (from tag -> [accessible tags])
+      additionalProperties:
+        type: array
+        items: { type: string }
+
+    PreviewContext:
+      type: object
+      description: Slim preview response - contains only data needed by UI
+      properties:
+        cwd: { type: string }
+        tree: { $ref: '#/components/schemas/DirNode' }
+        configValid: { type: boolean }
+        errors:
+          type: array
+          items: { type: string }
+        depRules:
+          $ref: '#/components/schemas/DepRulesForDisplay'
+      required:
+        - cwd
+        - tree
+        - configValid
+        - depRules
+
+    InitRequest:
+      type: object
+      properties:
+        cwd: { type: string }
+        entry: { type: string }
+
+    InitResponse:
+      type: object
+      properties:
+        cwd: { type: string }
+        entry: { type: string }
+        missingConfig: { type: boolean }
+        activeConfigContent: { type: string }
+        draft: { type: string }
+        preview:
+          $ref: '#/components/schemas/PreviewContext'
+        availableEntries:
+          type: array
+          items: { type: string }
+      required: [cwd, entry, missingConfig, activeConfigContent, draft, availableEntries]
+
+    PreviewRequest:
+      type: object
+      properties:
+        draft: { type: string }
+        entry: { type: string }
+        cwd: { type: string }
+      required: [draft, entry]
+
+    SaveRequest:
+      type: object
+      properties:
+        draft: { type: string }
+        cwd: { type: string }
+      required: [draft]
+
+    SaveSuccessResponse:
+      type: object
+      properties:
+        ok: { type: boolean, enum: [true] }
+        checksum: { type: string }
+      required: [ok]
+
+    SaveErrorResponse:
+      type: object
+      properties:
+        ok: { type: boolean, enum: [false] }
+        errors:
+          type: array
+          items: { type: string }
+      required: [ok, errors]
+
+    SaveResponse:
+      oneOf:
+        - $ref: '#/components/schemas/SaveSuccessResponse'
+        - $ref: '#/components/schemas/SaveErrorResponse'
+
+    MutationBase:
+      type: object
+      properties:
+        draft: { type: string }
+        entry: { type: string }
+        cwd: { type: string }
+      required: [draft, entry]
+
+    AddTagRequest:
+      allOf:
+        - $ref: '#/components/schemas/MutationBase'
+        - type: object
+          properties:
+            pathRel: { type: string }
+            tag: { type: string }
+          required: [pathRel, tag]
+
+    RemoveTagRequest:
+      allOf:
+        - $ref: '#/components/schemas/MutationBase'
+        - type: object
+          properties:
+            pathRel: { type: string }
+            tag: { type: string }
+          required: [pathRel, tag]
+
+    DeleteTagRequest:
+      allOf:
+        - $ref: '#/components/schemas/MutationBase'
+        - type: object
+          properties:
+            tag: { type: string }
+          required: [tag]
+
+    ToggleDepRuleRequest:
+      allOf:
+        - $ref: '#/components/schemas/MutationBase'
+        - type: object
+          properties:
+            from: { type: string }
+            to: { type: string }
+          required: [from, to]
+
+    MutationResponse:
+      type: object
+      properties:
+        draft: { type: string }
+        preview: { $ref: '#/components/schemas/PreviewContext' }
+      required: [draft, preview]
+

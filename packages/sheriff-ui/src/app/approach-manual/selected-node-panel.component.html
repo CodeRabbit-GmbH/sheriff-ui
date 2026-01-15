@@ -1,0 +1,67 @@
+@if (!collapsed()) {
+  <div class="card bg-base-100 border border-base-300 shrink-0">
+    <div class="card-body p-3 gap-2">
+      <div class="flex items-center justify-between pb-2 border-b border-base-300">
+        <div class="flex items-center gap-2">
+          <h3 class="text-sm font-medium">Selected</h3>
+          @if (node()) {
+            <span class="badge badge-xs" [class]="node()!.isSheriffModule ? 'badge-primary' : 'badge-info'">
+              {{ node()!.isSheriffModule ? 'Module' : 'Folder' }}
+            </span>
+          }
+        </div>
+        <button class="btn btn-xs btn-ghost btn-square" (click)="toggleCollapsed.emit()" title="Collapse selected">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+      </div>
+      @if (!node()) {
+        <div class="text-xs text-base-content/60">Click a node in the chart.</div>
+      } @else {
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="text-sm">
+            <span class="font-semibold">{{ node()!.name }}</span>
+            <span class="text-xs text-base-content/60 ml-2">{{ node()!.pathRel }}</span>
+          </div>
+          <div class="flex flex-wrap gap-1 items-center">
+            @for (t of node()!.tags ?? []; track t) {
+              <span class="badge badge-sm" [class]="getTagBadgeClass(t)">
+                {{ t }}
+                <button class="btn btn-ghost btn-xs px-0.5" (click)="removeTag.emit(t)">✕</button>
+              </span>
+            }
+            @if ((node()!.tags?.length ?? 0) === 0) {
+              <span class="text-xs text-base-content/60">No tags</span>
+            }
+          </div>
+          <div class="flex gap-1 items-center ml-auto">
+            <select class="select select-bordered select-xs" #tagPick title="Tag to add">
+              @for (t of allTags(); track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+            <button class="btn btn-xs" (click)="onAddTag()">Add</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <!-- Collapsed Selected Panel -->
+  <div
+    class="h-8 shrink-0 bg-base-100 border border-base-300 rounded-lg cursor-pointer hover:bg-base-200 transition-colors flex items-center justify-between gap-2 px-3"
+    (click)="toggleCollapsed.emit()"
+    title="Expand selected"
+  >
+    <div class="flex items-center gap-2">
+      <span class="text-sm font-medium text-base-content/70">Selected</span>
+      @if (node()) {
+        <span class="badge badge-xs" [class]="getTagBadgeClass(node()!.tags?.[0] ?? '')">{{ node()!.name }}</span>
+      }
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+}

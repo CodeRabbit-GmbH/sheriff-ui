@@ -1,0 +1,81 @@
+{
+  "name": "sheriff-ui",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "packages/sheriff-ui/src",
+  "targets": {
+    "prebuild": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/sheriff-ui/src",
+        "command": "../../../node_modules/.bin/postcss styles.css --config ../../../postcss.config.cjs -o styles.generated.css"
+      }
+    },
+    "build": {
+      "dependsOn": ["prebuild"],
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/sheriff-ui",
+        "browser": "packages/sheriff-ui/src/main.ts",
+        "index": "packages/sheriff-ui/src/index.html",
+        "polyfills": [],
+        "tsConfig": "packages/sheriff-ui/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "packages/sheriff-ui/public"
+          }
+        ],
+        "styles": [
+          "packages/sheriff-ui/src/styles.generated.css"
+        ]
+      },
+      "defaultConfiguration": "production",
+      "configurations": {
+        "production": {
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve-ui": {
+      "continuous": true,
+      "dependsOn": ["prebuild"],
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 4210,
+        "proxyConfig": "packages/sheriff-ui/proxy.conf.json"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "sheriff-ui:build:development"
+        },
+        "production": {
+          "buildTarget": "sheriff-ui:build:production"
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "parallel": true,
+        "commands": [
+          "NX_DAEMON=false ./node_modules/.bin/nx run sheriff-api:serve",
+          "NX_DAEMON=false ./node_modules/.bin/nx run sheriff-ui:serve-ui"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  },
+  "tags": []
+}

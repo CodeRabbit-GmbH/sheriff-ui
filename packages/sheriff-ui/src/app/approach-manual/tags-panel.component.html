@@ -1,0 +1,78 @@
+@if (!collapsed()) {
+  <div
+    class="shrink-0 min-h-0 overflow-auto"
+    appPanelResize
+    [options]="{
+      defaultWidth: 384,
+      minWidth: 200,
+      maxWidth: 800,
+      storageKey: 'sheriff-ui-tags-panel-width',
+      handleEdge: 'right'
+    }"
+  >
+    <div class="card bg-base-100 border border-base-300 h-full w-full">
+      <div class="card-body p-4 gap-3">
+        <div class="flex items-center justify-between pb-2 border-b border-base-300">
+          <h2 class="card-title text-base">Tags</h2>
+          <div class="flex items-center gap-1">
+            <button
+              data-testid="manual-open-new-tag"
+              class="btn btn-xs btn-ghost btn-square"
+              [disabled]="!selectedNode()"
+              (click)="openNewTagModal.emit()"
+              [title]="selectedNode() ? 'New tag' : 'Select a module first to add a tag'"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+            <button class="btn btn-xs btn-ghost btn-square" (click)="toggleCollapsed.emit()" title="Collapse tags">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <label class="input input-bordered input-sm flex items-center gap-2 w-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            data-testid="manual-tag-filter"
+            class="grow"
+            placeholder="Filter tags..."
+            [value]="filterValue()"
+            (input)="onFilterInput($event)"
+          />
+        </label>
+
+        <div class="flex flex-wrap gap-2 overflow-auto flex-1 content-start">
+          @for (t of filteredTags(); track t) {
+            <span
+              [attr.data-testid]="'manual-tag-' + t"
+              class="badge badge-lg cursor-grab select-none hover:scale-105 transition-transform py-3 px-4 text-sm font-medium"
+              [class]="getTagBadgeClass(t)"
+              draggable="true"
+              (dragstart)="onDragStart($event, t)"
+              (dragend)="tagDragEnd.emit()"
+            >
+              {{ t }}
+              <span class="ml-2 opacity-70 text-xs bg-base-100/30 rounded-full px-1.5">{{ tagUsageCounts().get(t) ?? 0 }}</span>
+            </span>
+          }
+        </div>
+
+      </div>
+    </div>
+  </div>
+} @else {
+  <!-- Collapsed Tags Panel -->
+  <div
+    class="w-8 shrink-0 bg-base-100 border border-base-300 rounded-lg cursor-pointer hover:bg-base-200 transition-colors flex items-center justify-center"
+    (click)="toggleCollapsed.emit()"
+    title="Expand tags"
+  >
+    <span class="writing-mode-vertical-flip text-sm font-medium text-base-content/70">Tags</span>
+  </div>
+}

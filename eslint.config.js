@@ -28,4 +28,12 @@ module.exports = tseslint.config(
   {
     ignores: ['**/nodes_modules/'],
   },
+  {
+    // Generated or vendored assets (not source code)
+    ignores: [
+      '**/dist/**',
+      'packages/**/public/**',
+      'packages/sheriff-ui/src/app/api/**',
+    ],
+  },
 );
